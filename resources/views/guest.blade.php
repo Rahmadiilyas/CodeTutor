@@ -45,7 +45,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
 
     <style>
-        /* HERO ORBIT test */
+        /* HERO ORBIT test j*/
         .hero-visual { isolation: isolate; overflow: visible; }
         .orbit-ring {
             position: absolute; left: 50%; top: 50%; border: 1px solid rgba(231,197,104,.14);
