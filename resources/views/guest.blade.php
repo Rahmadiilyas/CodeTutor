@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platform Pembelajaran Coding</title>
     <meta name="description" content="Platform pembelajaran coding dengan materi, latihan soal, test, dan code editor online.">
-
+<link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {

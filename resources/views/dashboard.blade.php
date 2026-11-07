@@ -211,7 +211,7 @@
                             </p>
 
                             <p class="mt-0.5 text-[9px] text-white/35">
-                                Evaluasi selesai
+                                Posttest selesai
                             </p>
 
                         </div>
@@ -331,7 +331,7 @@
                     </p>
 
                     <p class="text-xs text-slate-400">
-                        Evaluasi Selesai
+                        Posttest Selesai
                     </p>
 
                 </div>
@@ -376,7 +376,7 @@
                     </p>
 
                     <p class="text-xs text-slate-400">
-                        Rata-rata Nilai
+                        Rata-rata Nilai Posttest
                     </p>
 
                 </div>
@@ -810,7 +810,7 @@
 
                     {{-- TEST --}}
                     <a
-                        href="{{ route('test') }}"
+                        href="{{ route('pelajar.evaluasi.index', ['jenis_evaluasi' => 'posttest']) }}"
                         class="group rounded-xl border border-maroon-900/8 p-4 transition hover:-translate-y-1 hover:border-gold-500/30 hover:shadow-soft"
                     >
 
@@ -835,14 +835,14 @@
                         <p
                             class="mt-3 text-[11px] font-extrabold text-maroon-950"
                         >
-                            Ikuti Test
+                            Ikuti Posttest
                         </p>
 
 
                         <p
                             class="mt-1 text-[9px] leading-4 text-slate-400"
                         >
-                            Uji kemampuan
+                            Uji pemahaman setelah belajar
                         </p>
 
                     </a>
