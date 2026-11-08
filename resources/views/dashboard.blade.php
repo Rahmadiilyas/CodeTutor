@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+//perbaikan bug
 @section('title', 'Dashboard — CodeTutor')
 
 @section(

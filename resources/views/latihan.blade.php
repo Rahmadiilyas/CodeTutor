@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+//perbaikan bug
 @section('title', 'Latihan Soal — CodeTutor')
 
 @section('description', 'Latihan soal pemrograman CodeTutor.')
