@@ -17,7 +17,7 @@ CodeTutor merupakan platform pembelajaran pemrograman berbasis web yang dikemban
 | Kelas | B2023 |
 | Kelompok | 3 |
 | Project Manager | Rahmadi |
-| Repository | Isi dengan URL repository GitHub kelompok |
+| Repository | (https://github.com/Rahmadiilyas) |
 
 ## Tujuan
 
