@@ -1,5 +1,5 @@
 @extends('layouts.master')
-
+//perbaikan bug
 @section('title', 'Media Pembelajaran')
 @section('description', 'Kelola dan pratinjau media pembelajaran yang terhubung dengan materi milik Instruktur.')
 
