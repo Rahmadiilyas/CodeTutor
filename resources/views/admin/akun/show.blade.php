@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.master')
 
 @section('title', 'Detail Akun')
@@ -214,4 +213,3 @@
 
 </div>
 @endsection
-```

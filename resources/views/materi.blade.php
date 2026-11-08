@@ -1900,11 +1900,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Sama seperti halaman Instruktur:
+    // domain CodeTutor tetap dianggap publik. Hanya localhost/IP privat yang ditolak.
     function urlLokal(url) {
         try {
             const parsed = new URL(url, window.location.origin);
-            return parsed.origin === window.location.origin ||
-                ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+            const host = parsed.hostname.toLowerCase();
+
+            return (
+                host === 'localhost' ||
+                host === '127.0.0.1' ||
+                host === '::1' ||
+                host.endsWith('.local') ||
+                host.startsWith('192.168.') ||
+                host.startsWith('10.') ||
+                /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)
+            );
         } catch (error) {
             return true;
         }

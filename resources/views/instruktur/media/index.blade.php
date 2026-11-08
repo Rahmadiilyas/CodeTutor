@@ -179,7 +179,7 @@
         @if ($media->hasPages())<div class="border-t border-slate-100 px-5 py-4">{{ $media->links() }}</div>@endif
     </div>
 
-    <p class="text-xs leading-5 text-slate-400">File yang diunggah dibatasi maksimal 20 MB. Pastikan symbolic link Laravel sudah dibuat dengan <code class="rounded bg-white px-1.5 py-0.5 text-slate-600">php artisan storage:link</code>.</p>
+    <p class="text-xs leading-5 text-slate-400">File yang diunggah dibatasi maksimal 20 MB. Pastikan file tersimpan pada disk public dan URL file dapat diakses tanpa login.</p>
 </div>
 
 {{-- Popup Preview Media --}}
@@ -212,9 +212,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const isiPopup = document.getElementById('isiPopupPreview');
     const pesanPopup = document.getElementById('pesanPreviewMedia');
     const tombolTutup = document.getElementById('tutupPopupPreview');
-    const tautanAsli = document.getElementById('bukaMediaAsli');
+    const linkSumberAsli = document.getElementById('bukaMediaAsli');
 
-    if (!popup || !isiPopup) return;
+    if (!popup || !isiPopup || !judulPopup || !pesanPopup || !tombolTutup || !linkSumberAsli) return;
 
     const ekstensiDariUrl = function (url) {
         try {
@@ -245,7 +245,8 @@ document.addEventListener('DOMContentLoaded', function () {
         isiPopup.replaceChildren();
         pesanPopup.classList.add('hidden');
         pesanPopup.textContent = '';
-        tautanAsli.href = '#';
+        linkSumberAsli.href = '#';
+        linkSumberAsli.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     };
 
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const jenis = (data.jenis || 'lainnya').toLowerCase();
         const url = data.url || '';
         const youtube = data.youtube || '';
-        const tautanAsli = data.tautan || url || youtube;
+        const urlSumberAsli = data.tautan || url || youtube;
         const ekstensi = ekstensiDariUrl(url);
         const jenisGambar = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(ekstensi);
         const jenisVideo = ['mp4', 'mov', 'webm', 'ogg', 'm4v'].includes(ekstensi);
@@ -265,7 +266,8 @@ document.addEventListener('DOMContentLoaded', function () {
         isiPopup.replaceChildren();
         pesanPopup.classList.add('hidden');
         pesanPopup.textContent = '';
-        tautanAsli.href = tautanAsli || '#';
+        linkSumberAsli.href = urlSumberAsli || '#';
+        linkSumberAsli.classList.toggle('hidden', !urlSumberAsli);
 
         popup.classList.remove('hidden');
         popup.classList.add('flex');
@@ -284,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
             video.referrerPolicy = 'strict-origin-when-cross-origin';
             video.allowFullscreen = true;
             isiPopup.appendChild(video);
-            tautanAsli.href = data.tautan || youtube;
+            linkSumberAsli.href = data.tautan || youtube;
             return;
         }
 
@@ -293,7 +295,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const alamatPenuh = new URL(url, window.location.origin).href;
+        let alamatPenuh;
+        try {
+            alamatPenuh = new URL(url, window.location.origin).href;
+        } catch (error) {
+            tampilkanPesan('Alamat file tidak valid. Periksa kembali sumber media yang tersimpan.');
+            return;
+        }
 
         if (jenisPdf) {
             const bingkai = buatElemen('iframe', 'h-[70vh] min-h-[360px] w-full rounded-lg bg-white');
@@ -311,21 +319,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 || hostname === '::1'
                 || hostname.endsWith('.local')
                 || hostname.startsWith('192.168.')
-                || hostname.startsWith('10.');
+                || hostname.startsWith('10.')
+                || /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
 
             if (alamatLokal) {
-                pesanPopup.textContent = 'Google Docs Viewer hanya dapat mengambil file yang dapat diakses dari internet. Karena aplikasi sedang memakai alamat lokal, file PPT belum bisa dimuat di Google Docs. Jalankan aplikasi melalui domain publik atau gunakan tautan file yang dapat diakses publik.';
+                pesanPopup.textContent = 'Microsoft Office Online Viewer hanya dapat mengambil file dari alamat publik yang dapat diakses melalui internet. Gunakan domain publik dengan HTTPS.';
                 pesanPopup.classList.remove('hidden');
-            } else {
-                pesanPopup.textContent = 'Presentasi ditampilkan melalui Google Docs Viewer. File harus memiliki URL publik dan dapat diakses tanpa login.';
-                pesanPopup.classList.remove('hidden');
+                tampilkanPesan('File presentasi belum dapat dipratinjau karena URL masih menggunakan alamat lokal. Gunakan tombol Buka sumber asli.');
+                return;
             }
 
+            pesanPopup.textContent = 'Presentasi ditampilkan melalui Microsoft Office Online Viewer. File harus memiliki URL publik, menggunakan HTTPS, dan dapat diakses tanpa login.';
+            pesanPopup.classList.remove('hidden');
+
             const bingkai = buatElemen('iframe', 'h-[70vh] min-h-[360px] w-full rounded-lg bg-white');
-            bingkai.src = 'https://docs.google.com/gview?embedded=1&url=' + encodeURIComponent(alamatPenuh);
+            const viewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src='
+                + encodeURIComponent(alamatPenuh);
+
+            bingkai.src = viewerUrl;
             bingkai.title = 'Pratinjau PowerPoint ' + judul;
             bingkai.loading = 'lazy';
             bingkai.referrerPolicy = 'no-referrer';
+            bingkai.allowFullscreen = true;
             isiPopup.appendChild(bingkai);
             return;
         }

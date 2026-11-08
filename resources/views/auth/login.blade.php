@@ -380,11 +380,28 @@
         }
 
 
+        /*
+         * Jangan menggeser input ketika fokus.
+         * Transform membuat input membentuk stacking context baru
+         * sehingga ikon di sebelah kiri dapat tertutup oleh input.
+         */
         .login-form-card input:focus {
+            transform: none;
+        }
 
-            transform:
-                translateY(-1px);
+        /* Sembunyikan tombol reveal bawaan Microsoft Edge/IE.
+         * Toggle mata pada form ini sudah disediakan sendiri.
+         */
+        .login-form-card input[type="password"]::-ms-reveal,
+        .login-form-card input[type="password"]::-ms-clear {
+            display: none;
+        }
 
+        /* Cegah kontrol autofill bawaan WebKit menumpuk di area password. */
+        .login-form-card input[type="password"]::-webkit-credentials-auto-fill-button {
+            visibility: hidden;
+            display: none !important;
+            pointer-events: none;
         }
 
 
@@ -1379,7 +1396,7 @@
 
                                     <span
                                         class="pointer-events-none
-                                        absolute inset-y-0 left-0
+                                        absolute inset-y-0 left-0 z-10
                                         grid w-11
                                         place-items-center
                                         text-slate-400"
@@ -1408,7 +1425,7 @@
                                         autocomplete="username"
                                         required
                                         autofocus
-                                        class="h-12 w-full
+                                        class="relative z-0 h-12 w-full
                                         rounded-xl border
                                         border-slate-200
                                         bg-white pl-11 pr-4
@@ -1460,7 +1477,7 @@
 
                                     <span
                                         class="pointer-events-none
-                                        absolute inset-y-0 left-0
+                                        absolute inset-y-0 left-0 z-10
                                         grid w-11 place-items-center
                                         text-slate-400"
                                     >
@@ -1498,7 +1515,7 @@
                                         placeholder="Masukkan password"
                                         autocomplete="current-password"
                                         required
-                                        class="h-12 w-full
+                                        class="relative z-0 h-12 w-full
                                         rounded-xl border
                                         border-slate-200
                                         bg-white pl-11 pr-12
@@ -1517,11 +1534,17 @@
                                         type="button"
                                         id="togglePassword"
                                         class="absolute inset-y-0
-                                        right-0 grid w-11
+                                        right-0 z-20 grid w-11
                                         place-items-center
                                         text-slate-400 transition
-                                        hover:text-maroon-700"
+                                        hover:text-maroon-700
+                                        focus:outline-none
+                                        focus-visible:ring-2
+                                        focus-visible:ring-maroon-600
+                                        focus-visible:ring-inset"
                                         aria-label="Tampilkan password"
+                                        aria-controls="password"
+                                        aria-pressed="false"
                                     >
 
                                         {{-- OPEN EYE --}}
@@ -1825,6 +1848,11 @@
                                 showPassword
                                     ? 'Sembunyikan password'
                                     : 'Tampilkan password'
+                            );
+
+                            togglePassword.setAttribute(
+                                'aria-pressed',
+                                showPassword ? 'true' : 'false'
                             );
 
                         }

@@ -1,10 +1,6 @@
 <?php
 
-
-
 namespace App\Http\Controllers\Instruktur;
-
-
 
 use App\Http\Controllers\Controller;
 
@@ -22,15 +18,11 @@ use Illuminate\Validation\Rule;
 
 use Illuminate\Validation\ValidationException;
 
-
-
 class MediaPembelajaranController extends Controller
 
 {
 
     private const JENIS_MEDIA = ['pdf', 'ppt', 'video', 'youtube', 'animasi', 'game', 'lainnya'];
-
-
 
     private function pastikanInstruktur(): void
 
@@ -48,8 +40,6 @@ class MediaPembelajaranController extends Controller
 
     }
 
-
-
     private function queryMediaMilikInstruktur()
 
     {
@@ -61,8 +51,6 @@ class MediaPembelajaranController extends Controller
         });
 
     }
-
-
 
     private function pastikanMilikInstruktur(MediaPembelajaran $mediaPembelajaran): void
 
@@ -83,8 +71,6 @@ class MediaPembelajaranController extends Controller
         );
 
     }
-
-
 
     private function catatAktivitas(string $jenis, string $deskripsi, ?int $idEntitas): void
 
@@ -108,8 +94,6 @@ class MediaPembelajaranController extends Controller
 
     }
 
-
-
     private function materiMilikInstruktur(bool $hanyaAktif = false)
 
     {
@@ -122,8 +106,6 @@ class MediaPembelajaranController extends Controller
 
             ->orderBy('judul_materi');
 
-
-
         if ($hanyaAktif) {
 
             $query->where('status', true)
@@ -132,13 +114,9 @@ class MediaPembelajaranController extends Controller
 
         }
 
-
-
         return $query->get();
 
     }
-
-
 
     private function validasiFileBerdasarkanJenis(Request $request, string $jenisMedia): void
 
@@ -150,8 +128,6 @@ class MediaPembelajaranController extends Controller
 
         }
 
-
-
         if ($jenisMedia === 'youtube') {
 
             throw ValidationException::withMessages([
@@ -161,8 +137,6 @@ class MediaPembelajaranController extends Controller
             ]);
 
         }
-
-
 
         $ekstensi = strtolower($request->file('file_media')->getClientOriginalExtension());
 
@@ -184,8 +158,6 @@ class MediaPembelajaranController extends Controller
 
         };
 
-
-
         if (!in_array($ekstensi, $ekstensiDiizinkan, true)) {
 
             throw ValidationException::withMessages([
@@ -197,8 +169,6 @@ class MediaPembelajaranController extends Controller
             ]);
 
         }
-
-
 
     }
 
@@ -240,13 +210,9 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         }
 
-
-
         $host = strtolower((string) parse_url($tautan, PHP_URL_HOST));
 
         $host = preg_replace('/^www\\./i', '', $host);
-
-
 
         if (!in_array($host, ['youtube.com', 'm.youtube.com', 'youtu.be', 'youtube-nocookie.com'], true)) {
 
@@ -260,66 +226,102 @@ private function aturanValidasiFile(string $jenisMedia): array
 
     }
 
-
-
     /**
+
      * Mengubah tautan YouTube menjadi URL embed yang dapat diputar di popup.
+
      */
+
     private function buatUrlEmbedYoutube(?string $tautan): ?string
+
     {
+
         if (!$tautan || !filter_var($tautan, FILTER_VALIDATE_URL)) {
+
             return null;
+
         }
 
         $host = strtolower((string) parse_url($tautan, PHP_URL_HOST));
+
         $host = preg_replace('/^www\\./i', '', $host);
+
         $idVideo = null;
 
         if ($host === 'youtu.be') {
+
             $jalur = trim((string) parse_url($tautan, PHP_URL_PATH), '/');
+
             $idVideo = explode('/', $jalur)[0] ?? null;
+
         } elseif (in_array($host, ['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'], true)) {
+
             $jalur = trim((string) parse_url($tautan, PHP_URL_PATH), '/');
+
             parse_str((string) parse_url($tautan, PHP_URL_QUERY), $parameter);
 
             if (!empty($parameter['v'])) {
+
                 $idVideo = (string) $parameter['v'];
+
             } elseif (preg_match('~^(?:embed|shorts|live)/([^/?]+)~', $jalur, $cocok)) {
+
                 $idVideo = $cocok[1];
+
             }
+
         }
 
-        if (!$idVideo || !preg_match('/^[A-Za-z0-9_-]{11}$/', $idVideo)) {
+        if (!$idVideo || !preg_match('/^[A-Za-z0-9\_-]{11}$/', $idVideo)) {
+
             return null;
+
         }
 
         return 'https://www.youtube-nocookie.com/embed/' . $idVideo;
+
     }
 
     /**
+
      * Menyiapkan URL pratinjau untuk setiap baris media pada halaman daftar.
+
      */
+
     private function siapkanDataPreview($daftarMedia)
+
     {
+
         $daftarMedia->getCollection()->transform(function (MediaPembelajaran $item) {
+
             $urlFile = $item->lokasi_file
+
                 ? Storage::disk('public')->url($item->lokasi_file)
+
                 : null;
 
             $urlTautan = $item->tautan && filter_var($item->tautan, FILTER_VALIDATE_URL)
+
                 ? $item->tautan
+
                 : null;
 
             $item->setAttribute('url_preview', $urlFile);
+
             $item->setAttribute('youtube_embed_url', $this->buatUrlEmbedYoutube($item->tautan));
+
             $item->setAttribute('nama_file_preview', $item->lokasi_file
+
                 ? basename($item->lokasi_file)
+
                 : ($urlTautan ? basename((string) parse_url($urlTautan, PHP_URL_PATH)) : ''));
 
             return $item;
+
         });
 
         return $daftarMedia;
+
     }
 
     public function index(Request $request)
@@ -327,8 +329,6 @@ private function aturanValidasiFile(string $jenisMedia): array
     {
 
         $this->pastikanInstruktur();
-
-
 
         $validated = $request->validate([
 
@@ -354,15 +354,11 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         ]);
 
-
-
         $query = $this->queryMediaMilikInstruktur()
 
             ->with(['materi.modul.bahasa'])
 
             ->orderByDesc('created_at');
-
-
 
         if (!empty($validated['q'])) {
 
@@ -388,15 +384,11 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         }
 
-
-
         if (!empty($validated['jenis_media'])) {
 
             $query->where('jenis_media', $validated['jenis_media']);
 
         }
-
-
 
         if (!empty($validated['materi'])) {
 
@@ -404,13 +396,9 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         }
 
-
-
         $media = $this->siapkanDataPreview($query->paginate(10)->withQueryString());
 
         $materiFilter = $this->materiMilikInstruktur();
-
-
 
         $totalMedia = $this->queryMediaMilikInstruktur()->count();
 
@@ -418,11 +406,7 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         $totalTautan = $this->queryMediaMilikInstruktur()->whereNotNull('tautan')->where('tautan', '!=', '')->count();
 
-
-
         $jenisMedia = self::JENIS_MEDIA;
-
-
 
         return view('instruktur.media.index', compact(
 
@@ -431,8 +415,6 @@ private function aturanValidasiFile(string $jenisMedia): array
         ));
 
     }
-
-
 
     public function create()
 
@@ -444,13 +426,9 @@ private function aturanValidasiFile(string $jenisMedia): array
 
         $jenisMedia = self::JENIS_MEDIA;
 
-
-
         return view('instruktur.media.create', compact('materi', 'jenisMedia'));
 
     }
-
-
 
     public function store(Request $request)
 
@@ -514,21 +492,15 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         ]);
 
-
-
         $this->validasiFileBerdasarkanJenis($request, $validated['jenis_media']);
 
         $this->validasiTautanYoutube($validated['jenis_media'], $validated['tautan'] ?? null);
-
-
 
         if ($validated['jenis_media'] === 'youtube' && empty($validated['tautan'])) {
 
             throw ValidationException::withMessages(['tautan' => 'Tautan YouTube wajib diisi untuk jenis media YouTube.']);
 
         }
-
-
 
         if ($validated['jenis_media'] !== 'youtube' && !$request->hasFile('file_media') && empty($validated['tautan'])) {
 
@@ -542,15 +514,11 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         }
 
-
-
         $lokasiFile = $request->hasFile('file_media')
 
             ? $request->file('file_media')->store('media-pembelajaran', 'public')
 
             : null;
-
-
 
         try {
 
@@ -580,8 +548,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         }
 
-
-
         $this->catatAktivitas(
 
             'Tambah Media Pembelajaran',
@@ -592,15 +558,11 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         );
 
-
-
         return redirect()->route('instruktur.media.index')
 
             ->with('success', 'Media pembelajaran berhasil ditambahkan.');
 
     }
-
-
 
     public function edit(MediaPembelajaran $mediaPembelajaran)
 
@@ -610,13 +572,9 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         $this->pastikanMilikInstruktur($mediaPembelajaran);
 
-
-
         $materi = $this->materiMilikInstruktur();
 
         $jenisMedia = self::JENIS_MEDIA;
-
-
 
         return view('instruktur.media.edit', [
 
@@ -629,8 +587,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
         ]);
 
     }
-
-
 
     public function update(Request $request, MediaPembelajaran $mediaPembelajaran)
 
@@ -645,8 +601,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
     (string) $request->input('jenis_media', '')
 
 );
-
-
 
         $validated = $request->validate([
 
@@ -694,21 +648,15 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         ]);
 
-
-
         $this->validasiFileBerdasarkanJenis($request, $validated['jenis_media']);
 
         $this->validasiTautanYoutube($validated['jenis_media'], $validated['tautan'] ?? null);
-
-
 
         if ($validated['jenis_media'] === 'youtube' && empty($validated['tautan'])) {
 
             throw ValidationException::withMessages(['tautan' => 'Tautan YouTube wajib diisi untuk jenis media YouTube.']);
 
         }
-
-
 
         $punyaFileLama = !empty($mediaPembelajaran->lokasi_file);
 
@@ -728,8 +676,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         }
 
-
-
         $fileLama = $mediaPembelajaran->lokasi_file;
 
         $lokasiFile = $fileLama;
@@ -743,8 +689,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
             $lokasiFile = $request->file('file_media')->store('media-pembelajaran', 'public');
 
         }
-
-
 
         try {
 
@@ -774,15 +718,11 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         }
 
-
-
         if ($fileLama && $fileLama !== $lokasiFile) {
 
             Storage::disk('public')->delete($fileLama);
 
         }
-
-
 
         $this->catatAktivitas(
 
@@ -794,15 +734,11 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         );
 
-
-
         return redirect()->route('instruktur.media.index')
 
             ->with('success', 'Media pembelajaran berhasil diperbarui.');
 
     }
-
-
 
     public function destroy(MediaPembelajaran $mediaPembelajaran)
 
@@ -812,15 +748,11 @@ $aturanFileMedia = $this->aturanValidasiFile(
 
         $this->pastikanMilikInstruktur($mediaPembelajaran);
 
-
-
         $judul = $mediaPembelajaran->judul_media;
 
         $id = (int) $mediaPembelajaran->id;
 
         $lokasiFile = $mediaPembelajaran->lokasi_file;
-
-
 
         $mediaPembelajaran->delete();
 
@@ -829,8 +761,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
             Storage::disk('public')->delete($lokasiFile);
 
         }
-
-
 
         $this->catatAktivitas(
 
@@ -841,8 +771,6 @@ $aturanFileMedia = $this->aturanValidasiFile(
             $id
 
         );
-
-
 
         return redirect()->route('instruktur.media.index')
 

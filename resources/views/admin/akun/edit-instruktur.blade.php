@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.master')
 
 @section('title', 'Edit Akun Instruktur | CodeTutor')
@@ -229,4 +228,3 @@
 
 </div>
 @endsection
-```
